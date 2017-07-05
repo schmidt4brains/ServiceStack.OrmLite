@@ -227,7 +227,7 @@ namespace ServiceStack.OrmLite.PostgreSQL
             return string.Format("\"{0}\".\"{1}\"", escapedSchema, base.NamingStrategy.GetTableName(modelDef.ModelName));
         }
         
-        public override string GetLastInsertIdSqlSuffix<T>()
+        public override long ExecuteInsertStatement<T>(IDbCommand dbCmd, string sql)
         {
             if (SelectIdentitySql == null)
                 throw new NotImplementedException("Returning last inserted identity is not implemented on this DB Provider.");
@@ -236,10 +236,14 @@ namespace ServiceStack.OrmLite.PostgreSQL
             {
                 var modelDef = GetModel(typeof(T));
                 var pkName = NamingStrategy.GetColumnName(modelDef.PrimaryKey.FieldName);
-                return $" RETURNING \"{pkName}\"";
+                sql += $" RETURNING \"{pkName}\"";
+            }
+            else
+            {
+                sql += "; " + SelectIdentitySql;
             }
 
-            return "; " + SelectIdentitySql;
+            return dbCmd.ExecLongScalar(sql);
         }
 
         public override void SetParameter(FieldDefinition fieldDef, IDbDataParameter p)

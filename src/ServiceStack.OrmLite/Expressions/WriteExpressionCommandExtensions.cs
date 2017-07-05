@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite
@@ -179,7 +177,7 @@ namespace ServiceStack.OrmLite
             var sql = dialectProvider.ToInsertRowStatement(dbCmd, obj, onlyFields);
 
             if (selectIdentity)
-                return dbCmd.ExecLongScalar(sql + dialectProvider.GetLastInsertIdSqlSuffix<T>());
+                return dialectProvider.ExecuteInsertStatement<T>(dbCmd, sql);
 
             return dbCmd.ExecuteSql(sql);
         }
@@ -189,7 +187,7 @@ namespace ServiceStack.OrmLite
             dbCmd.InitInsertOnly(insertFields);
 
             if (selectIdentity)
-                return dbCmd.ExecLongScalar(dbCmd.CommandText + dbCmd.GetDialectProvider().GetLastInsertIdSqlSuffix<T>());
+                return dbCmd.GetDialectProvider().ExecuteInsertStatement<T>(dbCmd);
 
             return dbCmd.ExecuteNonQuery();
         }

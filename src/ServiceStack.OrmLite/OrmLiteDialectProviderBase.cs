@@ -474,19 +474,25 @@ namespace ServiceStack.OrmLite
             return dbCmd.ExecLongScalar();
         }
 
-        [Obsolete("Use GetLastInsertIdSqlSuffix()")]
+        [Obsolete("Use ExecuteInsertStatement<T>()")]
         public virtual long InsertAndGetLastInsertId<T>(IDbCommand dbCmd)
         {
-            dbCmd.CommandText += GetLastInsertIdSqlSuffix<T>();
-            return dbCmd.ExecLongScalar();
+            return ExecuteInsertStatement<T>(dbCmd);
         }
 
-        public virtual string GetLastInsertIdSqlSuffix<T>()
+        public long ExecuteInsertStatement<T>(IDbCommand dbCmd)
+        {
+            return ExecuteInsertStatement<T>(dbCmd, dbCmd.CommandText);
+        }
+
+        public virtual long ExecuteInsertStatement<T>(IDbCommand dbCmd, string sql)
         {
             if (SelectIdentitySql == null)
                 throw new NotImplementedException("Returning last inserted identity is not implemented on this DB Provider.");
 
-            return "; " + SelectIdentitySql;
+            sql += "; " + SelectIdentitySql;
+
+            return dbCmd.ExecLongScalar(sql);
         }
 
         // Fmt

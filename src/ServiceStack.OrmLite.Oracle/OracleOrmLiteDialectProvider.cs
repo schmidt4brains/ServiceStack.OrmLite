@@ -7,6 +7,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Converters;
 using ServiceStack.OrmLite.Oracle.Converters;
@@ -158,8 +160,10 @@ namespace ServiceStack.OrmLite.Oracle
             throw new NotSupportedException();
         }
 
-        public override long InsertAndGetLastInsertId<T>(IDbCommand dbCmd)
+        public override long ExecuteInsertStatement<T>(IDbCommand dbCmd, string sql)
         {
+            dbCmd.CommandText = sql;
+
             dbCmd.ExecuteScalar();
 
             var modelDef = GetModel(typeof(T));
@@ -173,6 +177,16 @@ namespace ServiceStack.OrmLite.Oracle
                 return 0;
 
             return Convert.ToInt64(identityParameter.Value);
+        }
+
+        public override Task<long> InsertAndGetLastInsertIdAsync<T>(IDbCommand dbCmd, CancellationToken token)
+        {
+            if (token.IsCancellationRequested)
+                return 0L
+                    .InTask();
+
+            return InsertAndGetLastInsertId<T>(dbCmd)
+                .InTask();
         }
 
         public override object ToDbValue(object value, Type type)

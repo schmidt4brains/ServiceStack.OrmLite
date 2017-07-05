@@ -639,8 +639,7 @@ namespace ServiceStack.OrmLite
 
             if (selectIdentity)
             {
-                dbCmd.CommandText += dialectProvider.GetLastInsertIdSqlSuffix<T>();
-                return dbCmd.ExecLongScalar();
+                return dialectProvider.ExecuteInsertStatement<T>(dbCmd);
             }
 
             return dbCmd.ExecNonQuery();
